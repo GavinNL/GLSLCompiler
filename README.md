@@ -8,16 +8,28 @@ the namespace for your project.
 
 ## Compile The Examples
 
-Compile the examples:
+To compile the examples, run the following code. You will need to have the `glslang` library installed. 
+
 ```Bash
+
 git clone https://github.com/GavinNL/GLSLCompiler.git
+
 cd GLSLCompiler
+
 mkdir build  && cd build
+
+# if you have the conan package manager installed, you can 
+# install the glslang depdendencies like so.
+# If you dont have conan, do not run this line. 
+# You will need to have the glslang libraries/headers installed
+# on your system
+conan install .. -s compiler.libcxx=libstdc++11
 
 cmake ..
 
 cmake --build .
 ```
+
 
 
 ## Quick Start Code

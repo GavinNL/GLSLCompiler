@@ -1,0 +1,7 @@
+[requires]
+glslang/8.13.3559
+
+[generators]
+cmake
+
+

@@ -5,6 +5,25 @@ project( GLSLCompiler )
 
 find_package(Threads)
 
+
+################################################################################
+# If the conan file exists, include it
+################################################################################
+if( EXISTS ${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake )
+    include(${CMAKE_CURRENT_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup(NO_OUTPUT_DIRS TARGETS)
+
+    set(glslangTarget CONAN_PKG::glslang)
+
+else()
+
+    set(glslangTarget SPIRV glslang HLSL OGLCompiler OSDependent)
+
+endif()
+################################################################################
+
+
+
 ################################################################################
 # This doesn't seem to work on Ubuntu 18.04 because the cmake files
 # provided by glslang-dev are not installed in the correct path
@@ -20,9 +39,9 @@ find_package(Threads)
 ################################################################################
 
 # Possibly need these??
-#set(glslangLibraries SPVRemapper SPIRV glslang HLSL SPVRemapper OGLCompiler OSDependent)
+#set(glslangTarget SPVRemapper SPIRV glslang HLSL SPVRemapper OGLCompiler OSDependent)
 
-set(glslangLibraries SPIRV glslang HLSL OGLCompiler OSDependent)
+
 
 
 ################################################################################
@@ -50,7 +69,7 @@ target_compile_definitions( GLSLCompiler
                                     CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 
 target_link_libraries( GLSLCompiler  INTERFACE
-                                ${glslangLibraries}
+                                ${glslangTarget}
                                 Threads::Threads)
 
 ################################################################################

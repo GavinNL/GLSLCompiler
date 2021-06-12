@@ -6,7 +6,7 @@
 #include <SPIRV/GlslangToSpv.h>
 #include <fstream>
 #include <iostream>
-
+#include <filesystem>
 
 //
 // The following code is modified from:
@@ -351,6 +351,55 @@ public:
         DefaultTBuiltInResource.limits.generalConstantMatrixVectorIndexing  = 1;
 
         return DefaultTBuiltInResource;
+    }
+
+
+    static std::vector<uint32_t> compileFromFile(std::filesystem::path const &P, std::vector<std::filesystem::path> const & includePaths = {})
+    {
+        GLSLCompiler_t compiler;
+
+        auto ext = P.extension();
+
+        compiler.addIncludePath( P.parent_path().string() );
+        for(auto & ii : includePaths)
+        {
+            compiler.addIncludePath( ii.string() );
+        }
+
+        std::ifstream t(P);
+
+        if( t )
+        {
+            std::string srcString((std::istreambuf_iterator<char>(t)),
+                             std::istreambuf_iterator<char>());
+
+            if( ext == ".vert")
+            {
+                return compiler.compile( srcString, EShLangVertex);
+            }
+            else if( ext == ".frag")
+            {
+                return compiler.compile( srcString, EShLangFragment);
+            }
+            else if( ext == ".comp")
+            {
+                return compiler.compile( srcString, EShLangCompute);
+            }
+            else if( ext == ".tesc")
+            {
+                return compiler.compile( srcString, EShLangTessControl);
+            }
+            else if( ext == ".tese")
+            {
+                return compiler.compile( srcString, EShLangTessEvaluation);
+            }
+            else if( ext == ".geom")
+            {
+                return compiler.compile( srcString, EShLangGeometry);
+            }
+            throw  std::runtime_error("Could not determine shader language, files must have extensions: vert, frag, comp, tesc, tese, geom.");
+        }
+        throw  std::runtime_error("Error opening file.");
     }
 };
 

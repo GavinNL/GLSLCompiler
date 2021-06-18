@@ -34,7 +34,7 @@ public:
                                         const char* includerName,
                                         size_t inclusionDepth) override
     {
-        return readLocalPath(headerName, includerName, (int)inclusionDepth);
+        return readLocalPath(headerName, includerName, static_cast<int>(inclusionDepth) );
     }
 
     virtual IncludeResult* includeSystem(const char* headerName,
@@ -109,7 +109,7 @@ protected:
         char* content = new tUserDataElement [ length ];
         file.seekg(0, file.beg);
         file.read(content, length);
-        return new IncludeResult(path, content, length, content);
+        return new IncludeResult(path, content, static_cast<size_t>(length), content);
     }
 
     // If no path markers, return current working directory.

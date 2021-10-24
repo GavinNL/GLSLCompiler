@@ -26,7 +26,7 @@
     #include <filesystem>
     namespace gnl
     {
-        namespace fs = gnl::fs;
+        namespace fs = std::filesystem;
     }
 
 #elif __has_include(<experimental/filesystem>)

@@ -3,10 +3,43 @@
 
 
 #include <glslang/Public/ShaderLang.h>
-#include <SPIRV/GlslangToSpv.h>
+
+#if __has_include(<SPIRV/GlslangToSpv.h>)
+#include<SPIRV/GlslangToSpv.h>
+#elif __has_include(<glslang/SPIRV/GlslangToSpv.h>)
+#include <glslang/SPIRV/GlslangToSpv.h>
+#endif
+
 #include <fstream>
 #include <iostream>
-#include <filesystem>
+
+
+// C++17 includes the <filesystem> library, but
+// unfortunately gcc7 does not have a finalized version of it
+// it is in the <experimental/filesystem lib
+// this section includes the proper header
+// depending on whether the header exists and
+// includes that. It also sets the
+// gnl::nf namespace
+#if __has_include(<filesystem>)
+
+    #include <filesystem>
+    namespace gnl
+    {
+        namespace fs = gnl::fs;
+    }
+
+#elif __has_include(<experimental/filesystem>)
+
+    #include <experimental/filesystem>
+    namespace gnl
+    {
+        namespace fs = std::experimental::filesystem;
+    }
+
+#else
+    #error There is no <filesystem> or <experimental/filesystem>
+#endif
 
 //
 // The following code is modified from:
@@ -199,9 +232,8 @@ public:
         {
             m_log   = Shader.getInfoLog();
             m_debug = Shader.getInfoDebugLog();
-            throw std::runtime_error( "Failed to preprocess" );
+            throw std::runtime_error( m_log );
         }
-
 
         const char* PreprocessedCStr = PreprocessedGLSL.c_str();
         Shader.setStrings(&PreprocessedCStr, 1);
@@ -211,7 +243,7 @@ public:
             m_log   = Shader.getInfoLog();
             m_debug = Shader.getInfoDebugLog();
 
-            throw std::runtime_error( "Parsing Failed" );
+            throw std::runtime_error( m_log );
         }
 
         glslang::TProgram Program;
@@ -237,6 +269,7 @@ public:
         std::vector<unsigned int> SpirV;
         spv::SpvBuildLogger logger;
         glslang::SpvOptions spvOptions;
+
         glslang::GlslangToSpv(*Program.getIntermediate(ShaderType), SpirV, &logger, &spvOptions);
 
         if (logger.getAllMessages().length() > 0)
@@ -354,7 +387,7 @@ public:
     }
 
 
-    static std::vector<uint32_t> compileFromFile(std::filesystem::path const &P, std::vector<std::filesystem::path> const & includePaths = {})
+    static std::vector<uint32_t> compileFromFile(gnl::fs::path const &P, std::vector<gnl::fs::path> const & includePaths = {})
     {
         GLSLCompiler_t compiler;
 
@@ -423,5 +456,6 @@ using GLSLCompiler1115 = GLSLCompiler_t<glslang::EShTargetVulkan_1_1, glslang::E
 }
 
 #endif 
+
 
 

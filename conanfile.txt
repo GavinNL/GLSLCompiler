@@ -1,7 +1,12 @@
 [requires]
-glslang/8.13.3559
+#glslang/8.13.3559
+glslang/11.5.0
+catch2/2.13.6
 
 [generators]
 cmake
+cmake_paths
+cmake_find_package
+cmake_find_package_multi
 
 

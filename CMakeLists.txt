@@ -62,7 +62,7 @@ target_include_directories( GLSLCompiler
 
 target_compile_features( GLSLCompiler
                           INTERFACE
-                              cxx_std_11)
+                              cxx_std_17)
 
 target_compile_definitions( GLSLCompiler
                                 INTERFACE
@@ -70,7 +70,8 @@ target_compile_definitions( GLSLCompiler
 
 target_link_libraries( GLSLCompiler  INTERFACE
                                 ${glslangTarget}
-                                Threads::Threads)
+                                Threads::Threads
+                                stdc++fs)
 
 ################################################################################
 
@@ -85,13 +86,16 @@ target_link_libraries( GLSLCompiler  INTERFACE
 # Build the example executables
 ################################################################################
 add_executable(        example main.cpp )
-target_link_libraries( example PRIVATE GLSLCompiler )
+target_link_libraries( example PRIVATE GLSLCompiler stdc++fs )
 
 add_executable(        quick_start quick_start.cpp )
-target_link_libraries( quick_start PRIVATE GLSLCompiler )
+target_link_libraries( quick_start PRIVATE GLSLCompiler stdc++fs)
 
 
 add_executable(        example_include_paths example_include_paths.cpp )
-target_link_libraries( example_include_paths PRIVATE GLSLCompiler )
+target_link_libraries( example_include_paths PRIVATE GLSLCompiler stdc++fs)
 
 ################################################################################
+
+
+add_subdirectory(test)

@@ -14,33 +14,6 @@
 #include <iostream>
 
 
-// C++17 includes the <filesystem> library, but
-// unfortunately gcc7 does not have a finalized version of it
-// it is in the <experimental/filesystem lib
-// this section includes the proper header
-// depending on whether the header exists and
-// includes that. It also sets the
-// gnl::nf namespace
-#if __has_include(<filesystem>)
-
-    #include <filesystem>
-    namespace gnl
-    {
-        namespace fs = std::filesystem;
-    }
-
-#elif __has_include(<experimental/filesystem>)
-
-    #include <experimental/filesystem>
-    namespace gnl
-    {
-        namespace fs = std::experimental::filesystem;
-    }
-
-#else
-    #error There is no <filesystem> or <experimental/filesystem>
-#endif
-
 //
 // The following code is modified from:
 //
@@ -222,10 +195,11 @@ public:
         Shader.setEnvClient(glslang::EShClientVulkan, VulkanClientVersion);
         Shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
 
-        EShMessages messages = static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules);
+        EShMessages messages = EShMsgDefault;//static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules);
 
         const int DefaultVersion = 100;
 
+#if 1
         std::string PreprocessedGLSL;
 
         if (!Shader.preprocess(&Resources, DefaultVersion, ENoProfile, false, false, messages, &PreprocessedGLSL, m_includer))
@@ -237,7 +211,7 @@ public:
 
         const char* PreprocessedCStr = PreprocessedGLSL.c_str();
         Shader.setStrings(&PreprocessedCStr, 1);
-
+#endif
         if (!Shader.parse(&Resources, DefaultVersion, false, messages))
         {
             m_log   = Shader.getInfoLog();
@@ -387,16 +361,28 @@ public:
     }
 
 
-    static std::vector<uint32_t> compileFromFile(gnl::fs::path const &P, std::vector<gnl::fs::path> const & includePaths = {})
+    static std::string parentPath(std::string const & s)
+    {
+        auto i = s.find_last_of('/');
+        return s.substr(0, i);
+    }
+
+    static std::string extension(std::string const & s)
+    {
+        auto i = s.find_last_of('.');
+        return s.substr(i);
+    }
+
+    static std::vector<uint32_t> compileFromFile(std::string const &P, std::vector<std::string> const & includePaths = {})
     {
         GLSLCompiler_t compiler;
 
-        auto ext = P.extension();
+        auto ext = extension(P);//P.extension();
 
-        compiler.addIncludePath( P.parent_path().string() );
+        compiler.addIncludePath( parentPath(P) );
         for(auto & ii : includePaths)
         {
-            compiler.addIncludePath( ii.string() );
+            compiler.addIncludePath( ii);
         }
 
         std::ifstream t(P);

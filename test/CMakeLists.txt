@@ -44,8 +44,8 @@ foreach(file ${files})
     string(REGEX REPLACE "unit-([^$]+)" "\\1" testcase ${file_basename})
 
     set(FILE_SUFFIX_NAME  ${testcase} )
-    set(EXE_NAME     unit-${MODULE_NAME}-${FILE_SUFFIX_NAME} )
-    set(TEST_NAME    test-${MODULE_NAME}-${FILE_SUFFIX_NAME} )
+    set(EXE_NAME     unit-${FILE_SUFFIX_NAME} )
+    set(TEST_NAME    test-${FILE_SUFFIX_NAME} )
     set(SRC_NAME     unit-${FILE_SUFFIX_NAME}.cpp )
 
     set(exeCmd  ${EXE_NAME} )

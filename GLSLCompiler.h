@@ -3,10 +3,16 @@
 
 
 #include <glslang/Public/ShaderLang.h>
-#include <SPIRV/GlslangToSpv.h>
+
+#if __has_include(<SPIRV/GlslangToSpv.h>)
+#include<SPIRV/GlslangToSpv.h>
+#elif __has_include(<glslang/SPIRV/GlslangToSpv.h>)
+#include <glslang/SPIRV/GlslangToSpv.h>
+#endif
+
 #include <fstream>
 #include <iostream>
-#include <filesystem>
+
 
 //
 // The following code is modified from:
@@ -189,29 +195,29 @@ public:
         Shader.setEnvClient(glslang::EShClientVulkan, VulkanClientVersion);
         Shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
 
-        EShMessages messages = static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules);
+        EShMessages messages = EShMsgDefault;//static_cast<EShMessages>(EShMsgSpvRules | EShMsgVulkanRules);
 
         const int DefaultVersion = 100;
 
+#if 1
         std::string PreprocessedGLSL;
 
         if (!Shader.preprocess(&Resources, DefaultVersion, ENoProfile, false, false, messages, &PreprocessedGLSL, m_includer))
         {
             m_log   = Shader.getInfoLog();
             m_debug = Shader.getInfoDebugLog();
-            throw std::runtime_error( "Failed to preprocess" );
+            throw std::runtime_error( m_log );
         }
-
 
         const char* PreprocessedCStr = PreprocessedGLSL.c_str();
         Shader.setStrings(&PreprocessedCStr, 1);
-
+#endif
         if (!Shader.parse(&Resources, DefaultVersion, false, messages))
         {
             m_log   = Shader.getInfoLog();
             m_debug = Shader.getInfoDebugLog();
 
-            throw std::runtime_error( "Parsing Failed" );
+            throw std::runtime_error( m_log );
         }
 
         glslang::TProgram Program;
@@ -237,6 +243,7 @@ public:
         std::vector<unsigned int> SpirV;
         spv::SpvBuildLogger logger;
         glslang::SpvOptions spvOptions;
+
         glslang::GlslangToSpv(*Program.getIntermediate(ShaderType), SpirV, &logger, &spvOptions);
 
         if (logger.getAllMessages().length() > 0)
@@ -354,16 +361,28 @@ public:
     }
 
 
-    static std::vector<uint32_t> compileFromFile(std::filesystem::path const &P, std::vector<std::filesystem::path> const & includePaths = {})
+    static std::string parentPath(std::string const & s)
+    {
+        auto i = s.find_last_of('/');
+        return s.substr(0, i);
+    }
+
+    static std::string extension(std::string const & s)
+    {
+        auto i = s.find_last_of('.');
+        return s.substr(i);
+    }
+
+    static std::vector<uint32_t> compileFromFile(std::string const &P, std::vector<std::string> const & includePaths = {})
     {
         GLSLCompiler_t compiler;
 
-        auto ext = P.extension();
+        auto ext = extension(P);//P.extension();
 
-        compiler.addIncludePath( P.parent_path().string() );
+        compiler.addIncludePath( parentPath(P) );
         for(auto & ii : includePaths)
         {
-            compiler.addIncludePath( ii.string() );
+            compiler.addIncludePath( ii);
         }
 
         std::ifstream t(P);
@@ -423,5 +442,6 @@ using GLSLCompiler1115 = GLSLCompiler_t<glslang::EShTargetVulkan_1_1, glslang::E
 }
 
 #endif 
+
 
 
